@@ -22,6 +22,7 @@ def enter():
 
 
 root = tk.Tk()
+root.resizable(False, True)
 root.title("ECEN - 495")
 root.configure(bg="#111111")
 
@@ -40,7 +41,7 @@ entry = tk.Entry(
 entry.grid(row=0, column=0, columnspan=3, padx=10, pady=5, sticky="nsew", ipady=80)
 
 buttons = [
-    ["1", "2", "3"],
+    ["1", "1", "3"],
     ["4", "5", "6"],
     ["7", "8", "9"],
     ["CLR", "0", "⌫"]
