@@ -2,7 +2,7 @@ import tkinter as tk
 import random
 import numpy as np
 
-shuffleKeys = True
+shuffleKeys = False
 
 def press(value):
     current = entry_var.get()
@@ -24,24 +24,32 @@ def enter():
     else:
         entry_var.set("KYS")
 
-# def randKeypad(keypad):
-#     if shuffleKeys:
-#         flat = [item for row in keypad for item in row]
-#         np.random.shuffle(flat)
-#         keypad[:] = [flat[i:i+3] for i in range(0, len(flat), 3)]
+def randKeypad(keypad):
+    if shuffleKeys:
+        nums = [str(i) for i in range(10)]
+        np.random.shuffle(nums)
+
+        keypad[:] = [
+            nums[0:3],
+            nums[3:6],
+            nums[6:9],
+            ["⏎", nums[9], "⌫"]
+        ]
 
 root = tk.Tk()
 root.resizable(False, True)
 root.title("ECEN - 495")
 root.configure(bg="#111111")
+root.attributes("-fullscreen", True)
+root.bind("<Escape>", lambda event: root.attributes("-fullscreen", False))
 
 entry_var = tk.StringVar()
 
-# Main outer frame
-main_frame = tk.Frame(root, bg="#111111")
-main_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-# Display frame
+main_frame = tk.Frame(root, bg="#111111", pady=70)
+main_frame.place(relx=0.5, rely=0.5, anchor="center", relheight=1)
+
+
 display_frame = tk.Frame(main_frame, bg="#111111")
 display_frame.pack(fill="x", pady=(0, 10))
 
@@ -52,8 +60,8 @@ entry = tk.Entry(
     justify="right",
     bd=8,
     bg="#222222",
-    fg="#eb0606",
-    insertbackground="#eb0606"
+    fg="#d006eb",
+    insertbackground="#eb0693"
 )
 entry.pack(fill="x", ipady=40)
 
@@ -65,15 +73,15 @@ buttons = [
     ["1", "2", "3"],
     ["4", "5", "6"],
     ["7", "8", "9"],
-    ["CLR", "0", "⌫"]
+    ["⏎", "0", "⌫"]
 ]
 
-# randKeypad(buttons)
+randKeypad(buttons)
 button_refs = {}
 for r, row in enumerate(buttons):
     for c, text in enumerate(row):
-        if text == "CLR":
-            cmd = clear
+        if text == "⏎":
+            cmd = enter
         elif text == "⌫":
             cmd = backspace
         else:
@@ -93,25 +101,20 @@ for r, row in enumerate(buttons):
         )
         btn.grid(row=r, column=c, padx=5, pady=5, sticky="nsew")
         button_refs[text] = btn
-        
-# Enter button frame
-enter_frame = tk.Frame(main_frame, bg="#111111")
-enter_frame.pack(fill="x", pady=(10, 0))
 
-enter_button = tk.Button(
-    enter_frame,
-    text="ENTER",
-    command=enter,
-    font=("Arial", 60, "bold"),
-    bg="#8b0000",
-    fg="white",
-    activebackground="#12CE22",
-    activeforeground="#000000",
-    height=2
-)
-enter_button.pack(fill="x")
+button_refs["ENTER"] = button_refs["⏎"]
+button_refs["DELETE"] = button_refs["⌫"]
 
-# Make keypad resize nicely inside its frame
+
+### Invoking a button ###
+#button_refs["1"].invoke()
+#button_refs["ENTER"].invoke()
+#button_refs["DELETE"].invoke()
+
+### Making a button yellow ###
+#button_refs["1"].config(bg="yellow")
+
+
 for i in range(4):
     keypad_frame.grid_rowconfigure(i, weight=1)
 for i in range(3):
