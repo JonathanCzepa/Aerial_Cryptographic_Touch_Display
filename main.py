@@ -22,6 +22,25 @@ vl53.set_motion_distance(400, 1400)
 
 vl53.start_ranging()
 
+# Try different method names for getting distance data
+# The library may have get_data(), get_distance(), or get_ranging_data()
+def get_tof_data():
+    """Try multiple methods to get TOF data"""
+    # Try get_data() first (common in vl53l5cx libraries)
+    if hasattr(vl53, 'get_data'):
+        return vl53.get_data()
+    # Try get_distance() alternative
+    elif hasattr(vl53, 'get_distance'):
+        return vl53.get_distance()
+    # Try get_ranging_data()
+    elif hasattr(vl53, 'get_ranging_data'):
+        return vl53.get_ranging_data()
+    # Fallback: try motion indicator (may work on some versions)
+    elif hasattr(vl53, 'get_motion_indicator'):
+        return vl53.get_motion_indicator()
+    else:
+        return None
+
 # =============================================================================
 # TOF SENSOR CONFIGURATION - Adjust these values for your hardware setup
 # =============================================================================
@@ -72,9 +91,20 @@ def check_tof_hover():
         return
     
     try:
-        data = vl53.get_motion_indicator()
+        data = get_tof_data()
         if data:
-            distances = data.distance_mm
+            # Try different attribute names for distance data
+            if hasattr(data, 'distance_mm'):
+                distances = data.distance_mm
+            elif hasattr(data, 'distance'):
+                distances = data.distance
+            elif hasattr(data, 'distances'):
+                distances = data.distances
+            elif hasattr(data, 'data'):
+                distances = data.data
+            else:
+                # Try as numpy array or list
+                distances = np.array(data)
             # distances is 64-element array for 8x8 grid
             
             # Reset all buttons to default
