@@ -86,7 +86,7 @@ def get_button_from_zone(zone_x, zone_y):
 
 def check_tof_hover():
     """Check TOF sensor for finger hover and press over buttons"""
-    global prev_distances, last_pressed_button
+    global last_pressed_button
     
     if not TOF_AVAILABLE:
         return
@@ -109,16 +109,16 @@ def check_tof_hover():
             
             # Find the closest zone with valid reading
             closest_zone = -1
-            closest_dist = float('inf')
+            closest_dist = 9999  # Use int instead of float('inf')
             
             for i in range(64):
-                d = distances[i]
+                d = int(distances[i])  # Convert to Python int
                 if d > 0 and d < closest_dist:
                     closest_dist = d
                     closest_zone = i
             
             # If we found a valid zone, map to button
-            if closest_zone >= 0:
+            if closest_zone != -1:
                 zone_x = closest_zone % 8
                 zone_y = closest_zone // 8
                 btn_idx = get_button_from_zone(zone_x, zone_y)
