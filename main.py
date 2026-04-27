@@ -100,14 +100,14 @@ def check_tof_hover():
         if data:
             # Try different attribute names for distance data
             if hasattr(data, 'distance_mm'):
-                # Convert ctypes array to Python list
-                distances = list(data.distance_mm)
+                # Convert ctypes array to numpy array then to list
+                distances = np.array(data.distance_mm).tolist()
             elif hasattr(data, 'distance'):
-                distances = list(data.distance)
+                distances = np.array(data.distance).tolist()
             elif hasattr(data, 'distances'):
-                distances = list(data.distances)
+                distances = np.array(data.distances).tolist()
             elif hasattr(data, 'data'):
-                distances = np.array(data.data)
+                distances = np.array(data.data).tolist()
             else:
                 # Try as numpy array or list
                 distances = np.array(data)
