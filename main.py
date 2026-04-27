@@ -26,15 +26,20 @@ vl53.start_ranging()
 # The library may have get_data(), get_distance(), or get_ranging_data()
 def get_tof_data():
     """Try multiple methods to get TOF data"""
-    # Try get_data() first (common in vl53l5cx libraries)
+    # Pimoroni vl53l5cx-ctypes library uses data_ready() and get_data()
+    if hasattr(vl53, 'data_ready') and vl53.data_ready():
+        if hasattr(vl53, 'get_data'):
+            return vl53.get_data()
+    # SparkFun library uses check_data_ready() and get_ranging_data()
+    if hasattr(vl53, 'check_data_ready') and vl53.check_data_ready():
+        if hasattr(vl53, 'get_ranging_data'):
+            return vl53.get_ranging_data()
+    # Try get_data() (common in other vl53l5cx libraries)
     if hasattr(vl53, 'get_data'):
         return vl53.get_data()
     # Try get_distance() alternative
     elif hasattr(vl53, 'get_distance'):
         return vl53.get_distance()
-    # Try get_ranging_data()
-    elif hasattr(vl53, 'get_ranging_data'):
-        return vl53.get_ranging_data()
     # Fallback: try motion indicator (may work on some versions)
     elif hasattr(vl53, 'get_motion_indicator'):
         return vl53.get_motion_indicator()
