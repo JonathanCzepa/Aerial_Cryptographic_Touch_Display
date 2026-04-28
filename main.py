@@ -2,181 +2,103 @@ import tkinter as tk
 import random
 import numpy as np
 import time
-import numpy
-import vl53l5cx_ctypes as vl53l5cx
-from vl53l5cx_ctypes import STATUS_RANGE_VALID, STATUS_RANGE_VALID_LARGE_PULSE
+import qwiic_vl53l5cx
+import sys
+from math import sqrt
 
-print("Uploading firmware, please wait...")
-vl53 = vl53l5cx.VL53L5CX()
-print("Done!")
-vl53.set_resolution(8 * 8)
-vl53.enable_motion_indicator(8 * 8)
-# vl53.set_integration_time_ms(50)
+distance_array = []
 
-# Enable motion indication at 8x8 resolution
-vl53.enable_motion_indicator(8 * 8)
+ROW_MIN_1 = 150
+ROW_MAX_1 = 200
 
-# Default motion distance is quite far, set a sensible range
-# eg: 40cm to 1.4m
-vl53.set_motion_distance(400, 1400)
+ROW_MIN_2 = 220
+ROW_MAX_2 = 260
 
-vl53.start_ranging()
+ROW_MIN_3 = 300
+ROW_MAX_3 = 500
 
-# Try different method names for getting distance data
-# The library may have get_data(), get_distance(), or get_ranging_data()
-def get_tof_data():
-    """Try multiple methods to get TOF data"""
-    # Pimoroni vl53l5cx-ctypes library uses data_ready() and get_data()
-    if hasattr(vl53, 'data_ready') and vl53.data_ready():
-        if hasattr(vl53, 'get_data'):
-            return vl53.get_data()
-    # SparkFun library uses check_data_ready() and get_ranging_data()
-    if hasattr(vl53, 'check_data_ready') and vl53.check_data_ready():
-        if hasattr(vl53, 'get_ranging_data'):
-            return vl53.get_ranging_data()
-    # Try get_data() (common in other vl53l5cx libraries)
-    if hasattr(vl53, 'get_data'):
-        return vl53.get_data()
-    # Try get_distance() alternative
-    elif hasattr(vl53, 'get_distance'):
-        return vl53.get_distance()
-    # Fallback: try motion indicator (may work on some versions)
-    elif hasattr(vl53, 'get_motion_indicator'):
-        return vl53.get_motion_indicator()
-    else:
-        return None
+def set_all_buttons(color, text_color="#ffffff"):
+    for btn in button_refs.values():
+        btn.config(bg=color, fg=text_color)
 
-# =============================================================================
-# TOF SENSOR CONFIGURATION - Adjust these values for your hardware setup
-# =============================================================================
-TOF_AVAILABLE = True  # Set to False to disable TOF sensor
+def reset_buttons():
+    for value, btn in button_refs.items():
+        if value in pressed_keys:
+            btn.config(bg="#12CE22", fg="#000000")
+        else:
+            btn.config(bg="#333333", fg="#ffffff")
 
-# Distance thresholds (in mm) - ADJUST BASED ON YOUR HARDWARE TESTING
-# HOVER: Distance when finger is detected (yellow highlight)
-# PRESS: Distance when finger is pressing (green highlight + trigger)
-HOVER_THRESHOLD = 300   # Default: 300mm - increase if sensor range is longer
-PRESS_THRESHOLD = 100   # Default: 100mm - decrease if sensor needs closer contact
+def flash_keypad(color, flashes=6):
+    global feedback_active
 
-# Sensor orientation - ADJUST IF BUTTONS DON'T MATCH HAND POSITION
-# If bottom row buttons highlight when hand is at TOP of display, set to True
-INVERT_ROW = True       # True = bottom of display is closer to sensor (sensor below)
-# =============================================================================
+    feedback_active = True
 
-def get_button_from_zone(zone_x, zone_y):
-    """
-    Map 8x8 zone coordinates to button index (0-8)
-    
-    Button layout (3x3 grid):
-        1  2  3   (top row - furthest from sensor)
-        4  5  6   (middle row)
-        7  8  9   (bottom row - closest to sensor)
-    
-    Zone coordinates: (0,0) is top-left, (7,7) is bottom-right of sensor
-    """
-    col = min(2, zone_x // 3)  # 0, 1, 2
-    
-    if INVERT_ROW:
-        # Sensor is below display: higher zone_y = closer = bottom row
-        row = min(2, zone_y // 3)
-    else:
-        # Sensor is above display: lower zone_y = closer = bottom row
-        row = 2 - min(2, zone_y // 3)
-    
-    return row * 3 + col  # Returns 0-8
+    def flash_step(count):
+        global feedback_active
 
-def check_tof_hover():
-    """Check TOF sensor for finger hover and press over buttons"""
-    global last_pressed_button
-    
-    if not TOF_AVAILABLE:
-        return
-    
-    try:
-        data = get_tof_data()
-        if data:
-            # Get distance data as numpy array
-            if hasattr(data, 'distance_mm'):
-                # Use numpy directly on the ctypes array
-                distances = np.asarray(data.distance_mm[:64])
-            elif hasattr(data, 'distance'):
-                distances = np.asarray(data.distance[:64])
-            else:
-                distances = np.asarray(data)[:64]
-            
-            # Reset all buttons to default
-            for btn in button_refs.values():
-                btn.config(bg="#333333", fg="#ffffff")
-            
-            # Find the closest zone with valid reading
-            closest_zone = -1
-            closest_dist = 9999  # Use int instead of float('inf')
-            
-            for i in range(64):
-                d = int(distances[i])  # Convert to Python int
-                if d > 0 and d < closest_dist:
-                    closest_dist = d
-                    closest_zone = i
-            
-            # If we found a valid zone, map to button
-            if closest_zone != -1:
-                zone_x = closest_zone % 8
-                zone_y = closest_zone // 8
-                btn_idx = get_button_from_zone(zone_x, zone_y)
-                btn_num = str(btn_idx + 1)
-                
-                # Check if it's a press (very close) or hover
-                if closest_dist < PRESS_THRESHOLD:
-                    # Press - green
-                    if btn_num in button_refs:
-                        button_refs[btn_num].config(bg="#12CE22", fg="#000000")
-                        press(btn_num)
-                elif closest_dist < HOVER_THRESHOLD:
-                    # Hover - yellow
-                    if btn_num in button_refs:
-                        button_refs[btn_num].config(bg="#FFFF00", fg="#000000")
-        
-        # Check again in 50ms
-        root.after(50, check_tof_hover)
-    except Exception as e:
-        print(f"TOF error: {e}")
-        root.after(50, check_tof_hover)
+        if count <= 0:
+            entry_arr.clear()
+            pressed_keys.clear()
+            feedback_active = False
+            reset_buttons()
+            return
+
+        if count % 2 == 0:
+            set_all_buttons(color, "#000000")
+        else:
+            reset_buttons()
+
+        root.after(200, lambda: flash_step(count - 1))
+
+    flash_step(flashes)
 
 shuffleKeys = False
 
 entry_arr = []
+pressed_keys = set()
+last_pressed_button = None
+feedback_active = False
 
 def press(value):
+    if feedback_active:
+        return
+
     entry_arr.append(value)
-    #current = entry_var.get()
-    #entry_var.set(current + value)
-    current = entry_var.get()
-    entry_var.set(current + "*")
-    
-    # Auto-enter after 4 digits
+    pressed_keys.add(value)
+
+    if value in button_refs:
+        button_refs[value].config(bg="#12CE22", fg="#000000")
+        
+
     if len(entry_arr) == 4:
         enter()
 
 def clear():
-    entry_var.set("")
+    entry_arr.clear()
+    pressed_keys.clear()
+    reset_buttons()
 
 def backspace():
-    current = entry_var.get()
-    entry_var.set(current[:-1])
+    if len(entry_arr) > 0:
+        removed = entry_arr.pop()
+
+        if removed not in entry_arr and removed in pressed_keys:
+            pressed_keys.remove(removed)
+
+        reset_buttons()
 
 def enter():
-    value = "".join(entry_arr) #Retrieve the actual digits entered
+    value = "".join(entry_arr)
     print("Entered:", value)
 
     if value == "1234":
-        entry_var.set("Accepted")
-        root.after(1500, lambda: [clear(), entry_arr.clear()])
+        flash_keypad("#12CE22")
     else:
-        entry_var.set("Wrong Password")
-        root.after(1500, lambda: [clear(), entry_arr.clear()])
+        flash_keypad("#FF0000")
 
 def randKeypad(keypad):
     if shuffleKeys:
-        nums = [str(i) for i in range(1, 10)]  # 1-9 only, no 0
+        nums = [str(i) for i in range(1, 10)]
         np.random.shuffle(nums)
 
         keypad[:] = [
@@ -185,39 +107,141 @@ def randKeypad(keypad):
             nums[6:9]
         ]
 
+def get_distance_array():
+    new_array = []
+
+    if myVL53L5CX.check_data_ready():
+        measurement_data = myVL53L5CX.get_ranging_data()
+
+        display_row = 1
+
+        for y in range(0, (image_width * (image_width - 1)) + 1, image_width):
+            if display_row in [3, 6]:
+                display_row += 1
+                continue
+
+            display_col = 1
+            row_array = []
+
+            for x in range(image_width - 1, -1, -1):
+                if display_col in [1, 2, 3]:
+                    display_col += 1
+                    continue
+
+                row_array.append(measurement_data.distance_mm[x + y])
+
+                display_col += 1
+
+            new_array.append(row_array)
+            display_row += 1
+
+    return new_array
+
+def check_sensor():
+    global distance_array, last_pressed_button
+
+    if feedback_active:
+        root.after(50, check_sensor)
+        return
+
+    distance_array = get_distance_array()
+
+    if len(distance_array) >= 6:
+        #Distances
+        
+        col_1_distance = np.min(distance_array[0])
+
+        
+        col_2_distance = np.min(distance_array[3])
+        
+        col_3_distance = np.min(distance_array[5])
+        
+        #Col 1
+        if ROW_MIN_1 < col_1_distance < ROW_MAX_1:
+            if last_pressed_button != "bottom_left":
+                button_grid[2][0].invoke()
+                last_pressed_button = "bottom_left"
+                
+        elif ROW_MIN_2 < col_1_distance < ROW_MAX_2:
+            if last_pressed_button != "middle_left":
+                button_grid[1][0].invoke()
+                last_pressed_button = "middle_left"
+                
+        elif ROW_MIN_3 < col_1_distance < ROW_MAX_3:
+            if last_pressed_button != "top_left":
+                button_grid[0][0].invoke()
+                last_pressed_button = "top_left"
+                
+        #Col 2
+        elif ROW_MIN_1 < col_2_distance < ROW_MAX_1:
+            if last_pressed_button != "bottom_middle":
+                button_grid[2][1].invoke()
+                last_pressed_button = "bottom_middle"
+                
+        elif ROW_MIN_2 < col_2_distance < ROW_MAX_2:
+            if last_pressed_button != "center":
+                button_grid[1][1].invoke()
+                last_pressed_button = "center"
+                
+        elif ROW_MIN_3 < col_2_distance < ROW_MAX_3:
+            if last_pressed_button != "top_middle":
+                button_grid[0][1].invoke()
+                last_pressed_button = "top_middle"
+        
+        #Col 3
+        elif ROW_MIN_1 < col_3_distance < ROW_MAX_1:
+            if last_pressed_button != "bottom_right":
+                button_grid[2][2].invoke()
+                last_pressed_button = "bottom_right"
+                
+        elif ROW_MIN_2 < col_3_distance < ROW_MAX_2:
+            if last_pressed_button != "middle_right":
+                button_grid[1][2].invoke()
+                last_pressed_button = "middle_right"
+                
+        elif ROW_MIN_3 < col_3_distance < ROW_MAX_3:
+            if last_pressed_button != "bottom_right":
+                button_grid[0][2].invoke()
+                last_pressed_button = "bottom_right"
+        
+        else:
+            last_pressed_button = None
+
+    root.after(50, check_sensor)
+
+myVL53L5CX = qwiic_vl53l5cx.QwiicVL53L5CX()
+
+print("\nInit VL53L5CX\n")
+
+if myVL53L5CX.is_connected() == False:
+    print("The device isn't connected to the system. Please check your connection", file=sys.stderr)
+    sys.exit(0)
+
+print("Initializing sensor board. This can take up to 10s. Please wait.")
+
+if myVL53L5CX.begin() == False:
+    print("Sensor initialization unsuccessful. Exiting...", file=sys.stderr)
+    sys.exit(1)
+
+myVL53L5CX.set_resolution(8 * 8)
+image_resolution = myVL53L5CX.get_resolution()
+
+image_width = int(sqrt(image_resolution))
+myVL53L5CX.start_ranging()
+
 root = tk.Tk()
 root.resizable(True, True)
 root.title("Secure Keypad")
 root.configure(bg="#111111")
 root.attributes("-fullscreen", True)
-root.after(1000, lambda: root.attributes('-fullscreen', True))
+root.after(1000, lambda: root.attributes("-fullscreen", True))
 root.bind("<Escape>", lambda event: root.attributes("-fullscreen", False))
 
-entry_var = tk.StringVar()
-
-
-main_frame = tk.Frame(root, bg="#111111", pady=70)
+main_frame = tk.Frame(root, bg="#111111")
 main_frame.place(relx=0.5, rely=0.5, anchor="center", relheight=1)
 
-
-display_frame = tk.Frame(main_frame, bg="#111111")
-display_frame.pack(fill="x", pady=(0, 10))
-
-entry = tk.Entry(
-    display_frame,
-    textvariable=entry_var,
-    font=("Arial", 30, "bold"),
-    justify="center",
-    bd=8,
-    bg="#222222",
-    fg="#d006eb",
-    insertbackground="#eb0693"
-)
-entry.pack(fill="x", ipady=10)
-
-# Keypad frame
 keypad_frame = tk.Frame(main_frame, bg="#111111")
-keypad_frame.pack(fill="both", expand=True)
+keypad_frame.pack(fill="both", expand=True, pady=(0, 180))
 
 buttons = [
     ["1", "2", "3"],
@@ -226,42 +250,40 @@ buttons = [
 ]
 
 randKeypad(buttons)
-button_refs = {}
-for r, row in enumerate(buttons):
-    for c, text in enumerate(row):
 
+button_refs = {}
+button_grid = []
+
+for r, row in enumerate(buttons):
+    button_grid.append([])
+
+    for c, text in enumerate(row):
         cmd = lambda t=text: press(t)
 
         btn = tk.Button(
             keypad_frame,
             text=text,
             command=cmd,
-            font=("Arial", 60, "bold"),
+            font=("Times", 60),
             bg="#333333",
             fg="#ffffff",
             activebackground="#12CE22",
             activeforeground="#000000",
-            width=5,
+            width=2,
             height=2
         )
+
         btn.grid(row=r, column=c, padx=30, pady=10, sticky="nsew")
-        
-        # Hover effects
-        btn.bind("<Enter>", lambda e, b=btn: b.config(bg="#FFFF00", fg="#000000"))
-        btn.bind("<Leave>", lambda e, b=btn: b.config(bg="#333333", fg="#ffffff"))
-        
+
         button_refs[text] = btn
-
-
+        button_grid[r].append(btn)
 
 for i in range(4):
     keypad_frame.grid_rowconfigure(i, weight=1)
+
 for i in range(3):
     keypad_frame.grid_columnconfigure(i, weight=1)
 
-
-# Start TOF hover detection
-if TOF_AVAILABLE:
-    root.after(500, check_tof_hover)  # Wait for sensor to initialize
+root.after(50, check_sensor)
 
 root.mainloop()
