@@ -18,7 +18,7 @@ It appears that the best option for small beam splitter glass is teleprompter re
 
 The computing board chosen was a PI4B for its ease of use and its capable I/O. This should be capeable of running off of any Windows/Linux Machine with little change.
 
-	TOF Sensor: https://www.digikey.com/en/products/detail/stmicroelectronics/VL53L5CX-SATEL/14552430 -> 
+TOF Sensor: https://www.digikey.com/en/products/detail/stmicroelectronics/VL53L5CX-SATEL/14552430 -> 
 
 These come packaged as a product of two so only one purchase is necessary. It was initially hoped that a single sensor would be able to give enough information for both row and column, but both sensors had to be used, one for row detection and another for column detection.
 
