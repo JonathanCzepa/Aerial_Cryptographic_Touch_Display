@@ -12,7 +12,7 @@ This was the best product available in the US, ideally it should be replaced wit
 
 Beam Splitter: https://glidegear.net/products/teleprompter-replacement-glass -> 
 
-	It appears that the best option for small beam splitter glass is teleprompter replacement glass, most of which comes in atleast 7inch sizes.
+It appears that the best option for small beam splitter glass is teleprompter replacement glass, most of which comes in atleast 7inch sizes.
 
 Computing Board (Pi 4B): https://www.mouser.com/c/embedded-solutions/computing/?form%20factor=Raspberry%20Pi%204%20B&utm_id=22019481498&utm_source=google&utm_medium=cpc&utm_marketing_tactic=amercorp -> 
 
@@ -26,24 +26,24 @@ These come packaged as a product of two so only one purchase is necessary. It wa
 
 Start the vnev:     
 
-python3 -m venv display
+	python3 -m venv display
 
 Activate the venv:  
 
-source display/bin/activate
+	source display/bin/activate
 
 Tkinter:     
 
-pip install tkinter 
+	pip install tkinter 
 
 Numpy:      
 
-pip install numpy 
+	pip install numpy 
 
 TOF Sensor:  
 
-pip install qwiic_vl53l5cx
+	pip install qwiic_vl53l5cx
 
 Math:        
 
-pip install math 
+	pip install math 
