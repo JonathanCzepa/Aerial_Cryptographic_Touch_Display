@@ -24,13 +24,9 @@ These come packaged as a product of two so only one purchase is necessary. It wa
 
 # ~~~~~~~~~~~~~~~~~~~ Software ~~~~~~~~~~~~~~~~~~~
 
-Virtual Environment on the PI:
-
 Start the vnev:     python3 -m venv display
 
 Activate the venv:  source display/bin/activate
-
-Packages necessary to run:
 
 Tkinter:     pip install tkinter 
 
