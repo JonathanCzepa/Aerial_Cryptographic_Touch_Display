@@ -16,7 +16,7 @@ It appears that the best option for small beam splitter glass is teleprompter re
 
 Computing Board (Pi 4B): https://www.mouser.com/c/embedded-solutions/computing/?form%20factor=Raspberry%20Pi%204%20B&utm_id=22019481498&utm_source=google&utm_medium=cpc&utm_marketing_tactic=amercorp -> 
 
-The computing board chosen was a PI4B for its ease of use and its capable I/O.
+The computing board chosen was a PI4B for its ease of use and its capable I/O. This should be capeable of running off of any Windows/Linux Machine with little change.
 
 TOF Sensor: https://www.digikey.com/en/products/detail/stmicroelectronics/VL53L5CX-SATEL/14552430 -> 
 
