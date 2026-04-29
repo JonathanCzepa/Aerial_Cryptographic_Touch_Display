@@ -24,14 +24,26 @@ These come packaged as a product of two so only one purchase is necessary. It wa
 
 # ~~~~~~~~~~~~~~~~~~~ Software ~~~~~~~~~~~~~~~~~~~
 
-Start the vnev:     python3 -m venv display
+Start the vnev:     
 
-Activate the venv:  source display/bin/activate
+python3 -m venv display
 
-Tkinter:     pip install tkinter 
+Activate the venv:  
 
-Numpy:       pip install numpy 
+source display/bin/activate
 
-TOF Sensor:  pip install qwiic_vl53l5cx
+Tkinter:     
 
-Math:        pip install math 
+pip install tkinter 
+
+Numpy:      
+
+pip install numpy 
+
+TOF Sensor:  
+
+pip install qwiic_vl53l5cx
+
+Math:        
+
+pip install math 
