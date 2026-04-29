@@ -1,4 +1,4 @@
-# ~~~~~~~~~~~~~~~~ Hardware 
+# ~~~~~~~~~Hardware~~~~~~~~~  
 
 This project utilizes four main hardware components, the three needed to create a floating image are an LCD, retroreflector material, and a beam splitter. When choosing these three it is important to note that if you want the entire screen reflected back both the retroreflector and beamsplitter need to be equal or larger than the LCD to get the whole image.
 
@@ -23,7 +23,7 @@ TOF Sensor: https://www.digikey.com/en/products/detail/stmicroelectronics/VL53L5
 
 These come packaged as a product of two so only one purchase is necessary. It was initially hoped that a single sensor would be able to give enough information for both row and column, but both sensors had to be used, one for row detection and another for column detection.
 
-# ~~~~~~~~~~Software ~~~~~~~~~ 
+# ~~~~~~~~~Software ~~~~~~~~~ 
 
 Start the vnev:     
 
