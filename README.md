@@ -1,4 +1,4 @@
-# ~~~~~~~~ Hardware ~~~~~~~~
+# ~~~~~~~~~~~~~~~~ Hardware ~~~~~~~~~~~~~~~~
 
 This project utilizes four main hardware components, the three needed to create a floating image are an LCD, retroreflector material, and a beam splitter. As this project intends to make a floating keypad it needs to utilize a TOF sensor, or 2, to detect a finger "pressing" on the keypad. 
 
@@ -11,7 +11,7 @@ Beam Splitter - https://glidegear.net/products/teleprompter-replacement-glass ->
 When choosing all three of the above hardware it is important that the size matches the LCD as you want to reflect all of the LCD screen, so choosing a retroreflector and beamsplitter larger than the LCD is advised
 
 
-# ~~~~~~~~ Software ~~~~~~~~
+# ~~~~~~~~~~~~~~~~ Software ~~~~~~~~~~~~~~~~
 
 # Aerial_Cryptographic_Touch_Display
 https://github.com/sparkfun/qwiic_vl53l5cx_py
