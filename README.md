@@ -2,7 +2,8 @@
 
 This project utilizes four main hardware components, the three needed to create a floating image are an LCD, retroreflector material, and a beam splitter. When choosing these three it is important to note that if you want the entire screen reflected back both the retroreflector and beamsplitter need to be equal or larger than the LCD to get the whole image.
 
-	LCD: https://www.waveshare.com/7inch-hdmi-lcd-h.htm  -> 
+	LCD: 
+	https://www.waveshare.com/7inch-hdmi-lcd-h.htm 
 
 A 1024 x 600 7inch LCD was used as anything larger would be to large to properly use, and anything smaller would make the keypad functionality hard to implement. It is ideal to get as high of a resolution as possible, along with as bright of a screen as possible for best outcome. 
 
